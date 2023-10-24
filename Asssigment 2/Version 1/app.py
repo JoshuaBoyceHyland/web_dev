@@ -24,45 +24,48 @@ def draw():
     return selection, deck_values[selection]
 
 
-@app.get("/")
-@app.get("/start")
-def display_opening_state():
-    session["deck"] = make_deck()
-    session["playerStands"] = False
+def set_up_player_and_dealer():
+    """sets up the player and dealer for a new game"""
     session["player"] = []
     session["dealer"] = []
     session["player"].append(draw())
     session["dealer"].append(draw())
     session["player"].append(draw())
     session["dealer"].append(draw())
-    return render_template(
-        "start.html",
-        player_cards=session["player"],   
-        player_total=calc_total(session["player"]),
-        dealer_cards=session["dealer"],
-        dealer_total= session["dealer"][0][-1][0],
-        hiddenCard = "static/cards/back.png",
-        title="",
-        header="",
-        footer="",
-        number_of_cards=len(session["deck"]),
-    )
+
+@app.get("/")
+@app.get("/start")
+def display_opening_state():
+    session["deck"] = make_deck()
+    set_up_player_and_dealer()
+    return render_current_page()
 
 
 @app.post("/stand")
 def over_to_the_dealer():
     session["playerStands"] = True
     dealer_draw()
-    return render_a_gameOver()
+    return determine_game_result()
 
 @app.post("/hit")
 def select_another_card():
     session["player"].append(draw())
     
     if(forced_game_over()): # check is game over 
-        return render_a_gameOver()
+        return determine_game_result()
     else:
-        return render_template(
+        return render_current_page()
+
+@app.post("/restart")
+def restart_game():
+    set_up_player_and_dealer()
+    return render_current_page()
+
+    
+
+def render_current_page():
+    """renders the page for period of game where dealers second card is hidden """
+    return render_template(
         "start.html",
         playerStands = False,
         player_cards=session["player"],
@@ -76,7 +79,6 @@ def select_another_card():
         number_of_cards=len(session["deck"]),
     )
 
-    
 def forced_game_over():
     """checking if the game should keep going, due to player going bust or getting 21 """
     if(calc_total(session["player"]) >= 21):
@@ -85,8 +87,8 @@ def forced_game_over():
         return False; 
 
 
-def render_a_gameOver():
-
+def determine_game_result():
+    """check what the result of game should be. win, lose, draw and then returns a template that that shows dealers hidden card"""
     gameOverMessage = ""
 
     ## cases for any 21 wins 
