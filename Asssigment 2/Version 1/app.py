@@ -64,6 +64,7 @@ def select_another_card():
     else:
         return render_template(
         "start.html",
+        playerStands = False,
         player_cards=session["player"],
         player_total=calc_total(session["player"]),
         dealer_cards =session["dealer"],
@@ -87,52 +88,39 @@ def forced_game_over():
 def render_a_gameOver():
 
     gameOverMessage = ""
-    if(calc_total(session["player"]) == 21):# player got 21, if dealer is equal, if dealer less
+
+    ## cases for any 21 wins 
+    if(calc_total(session["player"]) == 21):
         
         if(calc_total(session["dealer"]) == 21):
-            gameOverMessage = "You and the dealer have drawn at 21!"
+            gameOverMessage = "Draw!"
         else:
             gameOverMessage = "You got 21 and bet the dealer!"
-
+    elif(calc_total(session["dealer"]) == 21):
+            gameOverMessage = "You Lose, Dealer got 21!"
+    ## bust cases
+    elif(calc_total(session["player"]) >21):
+        gameOverMessage = "You went bust, you lose!"
+    elif( calc_total(session["dealer"]) > 21):
+        gameOverMessage = "Dealer went bust, you win!"
+    ## general closer to 21
+    elif(calc_total(session["player"]) > calc_total(session["dealer"])):
+        gameOverMessage = "You Win!"
     else:
-        if(calc_total(session["dealer"]) < 21):
-            if(calc_total(session["dealer"]) < calc_total(session["player"])): # if the dealer is greater than player
-                gameOverMessage = "You got closer to 21 and won!"
-            else:
-                gameOverMessage = "The Dealer got closer to 21 and you lost!"
+        gameOverMessage = "You Lose!"
+       
+
+
+                
     return render_a_gameOver_message(gameOverMessage)
-               
-
-def dealer_draw():
-    while(calc_total(session["dealer"] )<= 17):
-        session["dealer"].append(draw())
-        session.modified = True
-
-
-         
-
-
-def render_a_loss():
-
-    return render_template(
-        "start.html",
-        player_cards=session["player"],
-        player_total="You went gotboyce over 21 and went bust",
-        dealer_cards=session["dealer"],
-        hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
-        dealer_total= calc_total(session["dealer"]),
-        title="",
-        header="",
-        footer="",
-        number_of_cards=len(session["deck"]),
-    )
+            
 
 def render_a_gameOver_message(gameOverMessage):
     
 
     return render_template(
         "start.html",
-        playerStands = session["playerStands"], 
+        playerStands = True, 
         player_cards=session["player"],
         player_total=gameOverMessage,
         dealer_cards= session["dealer"],
@@ -144,28 +132,12 @@ def render_a_gameOver_message(gameOverMessage):
         number_of_cards=len(session["deck"]),
     )
 
-def render_a_win():
-    winMessage = " You got 21 congratulations !"
-    if(calc_total(session["player"] == calc_total(session["dealer"]))):
-       winMessage = "Its a draw, you and the dealer got 21"
+def dealer_draw():
+    while(calc_total(session["dealer"] )<= 17):
+        session["dealer"].append(draw())
+        session.modified = True
 
 
-    return render_template(
-        "start.html",
-        player_cards=session["player"],
-        player_total=winMessage,
-        dealer_cards=session["dealer"],
-        hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
-        dealer_total= calc_total(session["dealer"]),
-        title="",
-        header="",
-        footer="",
-        number_of_cards=len(session["deck"]),
-    )
-
-
-
-
-    
+   
 if __name__ == "__main__":
     app.run(debug=True)
