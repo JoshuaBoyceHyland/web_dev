@@ -12,8 +12,14 @@
 
 <h1>Dealer Cards</h1>
     <p>
-        <img src="static/cards/{{ dealer_cards[0][-1][-1] }}"/>
-        <img src="{{hiddenCard}}"/>
+        {%if playerStands == True%} 
+            {%for card in dealer_cards %}
+                <img src="static/cards/{{ card[-1][-1] }}"/>
+            {% endfor %}
+        {%else%}
+            <img src="static/cards/{{ dealer_cards[0][-1][-1] }}"/>
+            <img src="{{hiddenCard}}"/> 
+        {%endif%}
         <h3>Total for the dealer is: {{ dealer_total }}</h3>
     </p>
     <!--

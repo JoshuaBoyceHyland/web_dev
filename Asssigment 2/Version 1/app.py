@@ -28,6 +28,7 @@ def draw():
 @app.get("/start")
 def display_opening_state():
     session["deck"] = make_deck()
+    session["playerStands"] = False
     session["player"] = []
     session["dealer"] = []
     session["player"].append(draw())
@@ -50,6 +51,7 @@ def display_opening_state():
 
 @app.post("/stand")
 def over_to_the_dealer():
+    session["playerStands"] = True
     dealer_draw()
     return render_a_gameOver()
 
@@ -64,8 +66,8 @@ def select_another_card():
         "start.html",
         player_cards=session["player"],
         player_total=calc_total(session["player"]),
-        dealer_cards=session["dealer"],
-        dealer_total= session["dealer"][0][-1][0],
+        dealer_cards =session["dealer"],
+        dealer_total = session["dealer"][0][-1][0],
         hiddenCard = "static/cards/back.png",
         title="",
         header="",
@@ -80,6 +82,7 @@ def forced_game_over():
         return True; 
     else:
         return False; 
+
 
 def render_a_gameOver():
 
@@ -101,8 +104,9 @@ def render_a_gameOver():
                
 
 def dealer_draw():
-    while(calc_total(session["dealer"] )< 17):
+    while(calc_total(session["dealer"] )<= 17):
         session["dealer"].append(draw())
+        session.modified = True
 
 
          
@@ -113,7 +117,7 @@ def render_a_loss():
     return render_template(
         "start.html",
         player_cards=session["player"],
-        player_total="You went got over 21 and went bust",
+        player_total="You went gotboyce over 21 and went bust",
         dealer_cards=session["dealer"],
         hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
         dealer_total= calc_total(session["dealer"]),
@@ -128,9 +132,10 @@ def render_a_gameOver_message(gameOverMessage):
 
     return render_template(
         "start.html",
+        playerStands = session["playerStands"], 
         player_cards=session["player"],
         player_total=gameOverMessage,
-        dealer_cards=session["dealer"],
+        dealer_cards= session["dealer"],
         hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
         dealer_total= calc_total(session["dealer"]),
         title="",
