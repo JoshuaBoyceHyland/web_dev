@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<!--
+    <p>{{ player_cards }}</p> 
+    <p>{{ player_total }}</p>
+    <hr>
+    <p>{{ dealer_cards }}</p> 
+    <p>{{ dealer_total }}</p>
+-->
+<center>
+    <h1>Dealer Cards</h1>
+        <p>
+            {%if playerStands == True%} 
+                {%for card in dealer_cards %}
+                    <img src="static/cards/{{ card[-1][-1] }}"/>
+                {% endfor %}
+            {%else%}
+                <img src="static/cards/{{ dealer_cards[0][-1][-1] }}"/>
+                <img src="{{hiddenCard}}"/> 
+            {%endif%}
+            <h3>Total for the dealer is: {{ dealer_total }}</h3>
+        </p>
+        <!--
+            <h3>Total for the dealer is: {{ dealer_total }}</h3>
+        -->
+
+    <h1>Player Cards</h1>
+        <p>
+        {% for card in player_cards %}
+            <img src="static/cards/{{ card[-1][-1] }}"/>
+        {% endfor %}
+        </p>
+        <h3>Total for the player is: {{ player_total }}</h3>
+
+        <form action="/stand" method="post">
+            <input id = "button" type="submit" value="Stand"/>
+        </form>
+        <form action="/hit" method="post">
+            <input id = "button" type="submit" value="Hit"/>
+        </form>
+        <form action="/restart" method="post">
+            <input id = "button" type="submit" value="Restart"/>
+        </form>
+</center>
+   
+
+{% endblock %} 
