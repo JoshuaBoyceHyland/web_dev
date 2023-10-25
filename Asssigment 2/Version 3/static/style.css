@@ -56,8 +56,12 @@ img {
 
 
 .hidden{
-    color:blue;
+    
+    visibility: hidden;
 }
+
+
+
 #resultTitle{
     top: 35%;
     right: 15.5%;

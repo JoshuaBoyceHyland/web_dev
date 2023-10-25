@@ -94,6 +94,7 @@ def render_current_page():
     """renders the page for period of game where dealers second card is hidden """
     return render_template(
         "start.html",
+        
         playerStands = False,
         player_cards=session["player"],
         player_total=calc_total(session["player"]),

@@ -24,10 +24,7 @@
             <h3 id = "total">Total for the dealer is: {{ dealer_total }}</h3>
         </p>
     
-    <div class = "resultBox" >
-        <h1 id = "resultTitle">Result</h1>
-        <h2 id = "gameResult">  {{ gameResult}}</h2>
-    </div>
+    
   
     <h1 id  = "player-dealer-titles">Player Cards</h1>
         <p >
@@ -37,22 +34,31 @@
         </p>
         <h3 id = "total">Total for the player is: {{ player_total }}</h3>
 
-        <p >
+        <!-- <p >
             <img id = "deck"  src = "static/cards/back.png"/>
-        </p>
+        </p> -->
         
 
         <form hx-post="/stand" hx-target="body">
-            <input id = "button" type="submit" value="Stand"/>
+            <input  id = "button" type="submit" value="Stand"/>
         </form>
         <form hx-post="/hit" hx-target="body">
-            <input id = "button" type="submit" value="Hit"/>
+            <input class = "hit" id = "button" type="submit" value="Hit"/>
         </form>
         <form hx-post="/restart" hx-target="body" >
             <input id = "button" type="submit" value="Restart"/>
         </form>
 
-
+        {%if playerStands == True%} 
+            <div class = "resultBox " >
+        {%else%}     
+            <div class = "resultBox hidden" >
+        {%endif%} 
+                <h1 id = "resultTitle">Result</h1>
+                <h2 id = "gameResult">  {{ gameResult}}</h2>
+            </div>
+        
+            
 </center>
    
 
