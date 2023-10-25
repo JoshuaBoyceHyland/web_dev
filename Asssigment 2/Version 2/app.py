@@ -26,6 +26,7 @@ def draw():
 
 def set_up_player_and_dealer():
     """sets up the player and dealer for a new game"""
+    session["gameOver"] = False
     session["deck"] = make_deck()
     session["player"] = []
     session["dealer"] = []
@@ -44,18 +45,27 @@ def display_opening_state():
 
 @app.post("/stand")
 def over_to_the_dealer():
-    session["playerStands"] = True
-    dealer_draw()
-    return determine_game_result()
+
+    if(session["gameOver"] == False):
+        session["playerStands"] = True
+        dealer_draw()
+        session["gameOver"] = True
+        return determine_game_result()
+    else:
+        return render_restart_message()
+
 
 @app.post("/hit")
 def select_another_card():
-    session["player"].append(draw())
-    
-    if(forced_game_over()): # check is game over 
-        return determine_game_result()
+    if(session["gameOver"] == False):
+        session["player"].append(draw())
+        if(forced_game_over()): # check is game over 
+            session["gameOver"] = True
+            return determine_game_result()
+        else:
+            return render_current_page()
     else:
-        return render_current_page()
+        return render_restart_message()
 
 @app.post("/restart")
 def restart_game():
@@ -63,6 +73,22 @@ def restart_game():
     return render_current_page()
 
     
+
+def render_restart_message():
+    """renders the page for period of game where dealers second card is hidden """
+    return render_template(
+        "start.html",
+        playerStands = False,
+        player_cards=session["player"],
+        player_total= "Press restart to play again!",
+        dealer_cards =session["dealer"],
+        dealer_total = calc_total(session["dealer"]),
+        hiddenCard = "static/cards/back.png",
+        title="",
+        header="",
+        footer="",
+        number_of_cards=len(session["deck"]),
+    )
 
 def render_current_page():
     """renders the page for period of game where dealers second card is hidden """

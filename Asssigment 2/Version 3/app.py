@@ -118,8 +118,11 @@ def determine_game_result():
     """check what the result of game should be. win, lose, draw and then returns a template that that shows dealers hidden card"""
     gameOverMessage = ""
 
+    ## draw
+    if(calc_total(session["player"]) == calc_total(session["dealer"])):
+        gameOverMessage = "Its a draw, you and the dealer have same amount!"
     ## cases for any 21 wins 
-    if(calc_total(session["player"]) == 21):
+    elif(calc_total(session["player"]) == 21):
         
         if(calc_total(session["dealer"]) == 21):
             gameOverMessage = "Draw!"
@@ -151,8 +154,9 @@ def render_a_gameOver_message(gameOverMessage):
         "start.html",
         playerStands = True, 
         player_cards=session["player"],
-        player_total=gameOverMessage,
+        player_total=calc_total(session["player"]),
         dealer_cards= session["dealer"],
+        gameResult = gameOverMessage,
         hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
         dealer_total= calc_total(session["dealer"]),
         title="",

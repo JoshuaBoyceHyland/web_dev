@@ -1,0 +1,114 @@
+@font-face 
+{
+    font-family: cardFont;
+    src:url(/static/fonts/cardFont.ttf);
+}
+
+body{
+    background-color: green;
+    height: auto;
+    border: 50px solid #880808;
+    border-style: ridge;
+    margin: 0;
+    padding: 0;
+}
+#player-dealer-titles{
+    text-decoration: underline;
+    
+}
+#title{
+    color:white;
+    position: absolute;
+    text-align: center;
+    top:-2%;
+    right: 43.1%;
+    background-color: black;
+    border: 2px solid white;
+    border-radius: 20%;
+    width: 13%;
+    font-family:cardFont; 
+}
+
+#total{
+    background-color: black;
+    width: 15%;
+    height: 15%;
+    border-radius: 12px;
+    border: 2px solid #880808;
+    
+ 
+}
+img {
+    width: 10%;
+    height: 10%;
+  }
+
+#deck{
+    position: absolute;
+    height: 25%;
+    left: 10%;
+    top: 40%;
+}
+
+#hashLink{
+    display: none;
+}
+
+
+.hidden{
+    color:blue;
+}
+#resultTitle{
+    top: 35%;
+    right: 15.5%;
+    position: absolute;
+    font-family:cardFont; 
+}
+#gameResult{
+    top: 40%;
+    right: 8%;
+    position: absolute;
+    color:white;
+    background-color: black;
+    width: 20%;
+    height: auto;
+    border-radius: 5%;
+    text-align: center;
+    
+    border: 2px solid #880808;
+
+}
+#button{
+    background-color:#880808 ;
+    border:none;
+    color: white;
+    padding: 15x 40px;
+    width: 15%;
+    height: 10%;
+    text-align: center;
+    font-size: 30px;
+    border-radius: 12px;
+    border: 2px solid black;
+    transition-duration : 0.4s;
+    /* box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19); */
+    
+}
+
+img{
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+#footer{
+    height: 10%
+}
+form{
+    display: inline;
+}
+
+#button:hover{
+    background-color:#8f4a4a ;
+    
+}
+
+h1, h3{
+    color:white;
+}

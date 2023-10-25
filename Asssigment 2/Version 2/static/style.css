@@ -1,6 +1,13 @@
 body{
     background-color: green;
+    height: auto;
+    border: 50px solid #880808;
+    border-style: ridge;
+    margin: 0;
+    padding: 0;
 }
+
+
 
 #button{
     background-color:#880808 ;
@@ -8,12 +15,20 @@ body{
     color: white;
     padding: 15x 40px;
     width: 15%;
+    height: 10%;
     text-align: center;
-    font-size: 50px;
+    font-size: 30px;
     border-radius: 12px;
     border: 2px solid black;
     transition-duration : 0.4s;
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    
+}
+#footer{
+    height: 10%
+}
+form{
+    display: inline;
 }
 
 #button:hover{
@@ -21,6 +36,6 @@ body{
     
 }
 
-h1{
+h1, h3{
     color:white;
 }

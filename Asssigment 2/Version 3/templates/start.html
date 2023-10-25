@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<!--
+    <p>{{ player_cards }}</p> 
+    <p>{{ player_total }}</p>
+    <hr>
+    <p>{{ dealer_cards }}</p> 
+    <p>{{ dealer_total }}</p>
+-->
+<center>
+    <h1 id = title>Black Jack</h1>
+    <h1 id = "player-dealer-titles">Dealer Cards</h1>
+        <p >
+            {%if playerStands == True%} 
+                {%for card in dealer_cards %}
+                    <img src="static/cards/{{ card[-1][-1] }}"/>
+                {% endfor %}
+            {%else%}
+                <img src="static/cards/{{ dealer_cards[0][-1][-1] }}"/>
+                <img src="{{hiddenCard}}"/> 
+            {%endif%}
+            <h3 id = "total">Total for the dealer is: {{ dealer_total }}</h3>
+        </p>
+    
+    <div class = "resultBox" >
+        <h1 id = "resultTitle">Result</h1>
+        <h2 id = "gameResult">  {{ gameResult}}</h2>
+    </div>
+  
+    <h1 id  = "player-dealer-titles">Player Cards</h1>
+        <p >
+        {% for card in player_cards %}
+            <img src="static/cards/{{ card[-1][-1] }}"/>
+        {% endfor %}
+        </p>
+        <h3 id = "total">Total for the player is: {{ player_total }}</h3>
+
+        <p >
+            <img id = "deck"  src = "static/cards/back.png"/>
+        </p>
+        
+
+        <form hx-post="/stand" hx-target="body">
+            <input id = "button" type="submit" value="Stand"/>
+        </form>
+        <form hx-post="/hit" hx-target="body">
+            <input id = "button" type="submit" value="Hit"/>
+        </form>
+        <form hx-post="/restart" hx-target="body" >
+            <input id = "button" type="submit" value="Restart"/>
+        </form>
+
+
+</center>
+   
+
+{% endblock %} 
