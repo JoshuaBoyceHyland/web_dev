@@ -10,8 +10,9 @@
     <p>{{ dealer_total }}</p>
 -->
 <center>
-    <h1>Dealer Cards</h1>
-        <p>
+    <h1 id = title>Black Jack</h1>
+    <h1 id = "player-dealer-titles">Dealer Cards</h1>
+        <p >
             {%if playerStands == True%} 
                 {%for card in dealer_cards %}
                     <img src="static/cards/{{ card[-1][-1] }}"/>
@@ -20,19 +21,21 @@
                 <img src="static/cards/{{ dealer_cards[0][-1][-1] }}"/>
                 <img src="{{hiddenCard}}"/> 
             {%endif%}
-            <h3>Total for the dealer is: {{ dealer_total }}</h3>
+            <h3 id = "total">Total for the dealer is: {{ dealer_total }}</h3>
         </p>
+    
+    
+  
+        <h1 id  = "player-dealer-titles">Player Cards</h1>
+            <p >
+            {% for card in player_cards %}
+                <img src="static/cards/{{ card[-1][-1] }}"/>
+            {% endfor %}
+            </p>
+        <h3 id = "total">Total for the player is: {{ player_total }}</h3>
         <!--
             <h3>Total for the dealer is: {{ dealer_total }}</h3>
         -->
-
-    <h1>Player Cards</h1>
-        <p>
-        {% for card in player_cards %}
-            <img src="static/cards/{{ card[-1][-1] }}"/>
-        {% endfor %}
-        </p>
-        <h3>Total for the player is: {{ player_total }}</h3>
 
         <form action="/stand" method="post">
             <input id = "button" type="submit" value="Stand"/>
@@ -43,6 +46,15 @@
         <form action="/restart" method="post">
             <input id = "button" type="submit" value="Restart"/>
         </form>
+
+        {%if playerStands == True%} 
+            <div class = "resultBox " >
+        {%else%}     
+            <div class = "resultBox hidden" >
+        {%endif%} 
+            <h1 id = "resultTitle">Result</h1>
+            <h2 id = "gameResult">  {{ gameResult}}</h2>
+        </div>
 </center>
    
 
