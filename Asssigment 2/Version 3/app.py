@@ -40,6 +40,8 @@ def set_up_player_and_dealer():
 def display_opening_state():
     
     set_up_player_and_dealer()
+    if(calc_total(session["player"]) == 21):
+        return render_blackjack_gameover()
     return render_current_page()
 
 
@@ -70,6 +72,8 @@ def select_another_card():
 @app.post("/restart")
 def restart_game():
     set_up_player_and_dealer()
+    if(calc_total(session["player"]) == 21):
+        return render_blackjack_gameover()
     return render_current_page()
 
     
@@ -165,6 +169,23 @@ def render_a_gameOver_message(gameOverMessage):
         footer="",
         number_of_cards=len(session["deck"]),
     )
+
+def render_blackjack_gameover():
+    return render_template(
+        "start.html",
+        playerStands = True, 
+        player_cards=session["player"],
+        player_total=calc_total(session["player"]),
+        dealer_cards= session["dealer"],
+        gameResult = "Black Jack, you win!",
+        hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
+        dealer_total= calc_total(session["dealer"]),
+        title="",
+        header="",
+        footer="",
+        number_of_cards=len(session["deck"]),
+    )
+
 
 def dealer_draw():
     while(calc_total(session["dealer"] )<= 17):

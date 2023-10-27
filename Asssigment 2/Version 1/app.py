@@ -38,8 +38,9 @@ def set_up_player_and_dealer():
 @app.get("/")
 @app.get("/start")
 def display_opening_state():
-    
     set_up_player_and_dealer()
+    if(calc_total(session["player"]) == 21):
+        return render_blackjack_gameover()
     return render_current_page()
 
 
@@ -70,6 +71,8 @@ def select_another_card():
 @app.post("/restart")
 def restart_game():
     set_up_player_and_dealer()
+    if(calc_total(session["player"]) == 21):
+        return render_blackjack_gameover()
     return render_current_page()
 
     
@@ -118,6 +121,9 @@ def determine_game_result():
     """check what the result of game should be. win, lose, draw and then returns a template that that shows dealers hidden card"""
     gameOverMessage = ""
 
+    ## draw
+    if(calc_total(session["player"]) == calc_total(session["dealer"])):
+        gameOverMessage = "Its a draw, you and the dealer have same amount!"
     ## cases for any 21 wins 
     if(calc_total(session["player"]) == 21):
         
@@ -161,6 +167,21 @@ def render_a_gameOver_message(gameOverMessage):
         number_of_cards=len(session["deck"]),
     )
 
+def render_blackjack_gameover():
+    return render_template(
+        "start.html",
+        playerStands = True, 
+        player_cards=session["player"],
+        player_total=calc_total(session["player"]),
+        dealer_cards= session["dealer"],
+        gameResult = "Black Jack, you win!",
+        hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
+        dealer_total= calc_total(session["dealer"]),
+        title="",
+        header="",
+        footer="",
+        number_of_cards=len(session["deck"]),
+    )
 def dealer_draw():
     while(calc_total(session["dealer"] )<= 17):
         session["dealer"].append(draw())
