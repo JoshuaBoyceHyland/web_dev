@@ -1,5 +1,5 @@
 import random
-
+import time
 from model.data import make_deck, init_deck_values
 from calcs import calc_total
 
@@ -26,6 +26,7 @@ def draw():
 
 def set_up_player_and_dealer():
     """sets up the player and dealer for a new game"""
+    session["waiting_for_restart"] = False
     session["gameOver"] = False
     session["deck"] = make_deck()
     session["player"] = []
@@ -40,49 +41,63 @@ def set_up_player_and_dealer():
 def display_opening_state():
     
     set_up_player_and_dealer()
+    if(calc_total(session["player"]) == 21):
+        return render_blackjack_gameover()
     return render_current_page()
 
 
 @app.post("/stand")
 def over_to_the_dealer():
 
-    if(session["gameOver"] == False):
-        session["playerStands"] = True
-        dealer_draw()
-        session["gameOver"] = True
-        return determine_game_result()
+    if(session["waiting_for_restart"] == False):
+        if(session["gameOver"] == False):
+            session["playerStands"] = True
+            dealer_draw()
+            session["gameOver"] = True
+            return determine_game_result()
+        else:
+            return render_restart_message()
     else:
         return render_restart_message()
 
 
 @app.post("/hit")
 def select_another_card():
-    if(session["gameOver"] == False):
-        session["player"].append(draw())
-        if(forced_game_over()): # check is game over 
-            session["gameOver"] = True
-            return determine_game_result()
+    if(session["waiting_for_restart"] == False):
+        if(session["gameOver"] == False):
+            session["player"].append(draw())
+            if(forced_game_over()): # check is game over 
+                session["gameOver"] = True
+                return determine_game_result()
+            else:
+                return render_current_page()
         else:
-            return render_current_page()
+            return render_restart_message()
     else:
         return render_restart_message()
 
 @app.post("/restart")
 def restart_game():
+    session["waiting_for_restart"] = False
     set_up_player_and_dealer()
+    if(calc_total(session["player"]) == 21):
+        return render_blackjack_gameover()
     return render_current_page()
 
     
 
 def render_restart_message():
     """renders the page for period of game where dealers second card is hidden """
+
+    
     return render_template(
         "start.html",
-        playerStands = False,
+        playerStands = True,
         player_cards=session["player"],
-        player_total= "Press restart to play again!",
+        player_total= "Player Total: " + str(calc_total(session["player"])),
         dealer_cards =session["dealer"],
         dealer_total = calc_total(session["dealer"]),
+        gameResult = "Press restart to play again!",
         hiddenCard = "static/cards/back.png",
         title="",
         header="",
@@ -92,12 +107,13 @@ def render_restart_message():
 
 def render_current_page():
     """renders the page for period of game where dealers second card is hidden """
+    
     return render_template(
         "start.html",
         
         playerStands = False,
         player_cards=session["player"],
-        player_total=calc_total(session["player"]),
+        player_total="Player Total: " + str(calc_total(session["player"])),
         dealer_cards =session["dealer"],
         dealer_total = session["dealer"][0][-1][0],
         hiddenCard = "static/cards/back.png",
@@ -117,6 +133,7 @@ def forced_game_over():
 
 def determine_game_result():
     """check what the result of game should be. win, lose, draw and then returns a template that that shows dealers hidden card"""
+    session["waiting_for_restart"] = True
     gameOverMessage = ""
 
     ## draw
@@ -155,7 +172,7 @@ def render_a_gameOver_message(gameOverMessage):
         "start.html",
         playerStands = True, 
         player_cards=session["player"],
-        player_total=calc_total(session["player"]),
+        player_total="Player Total: " + str(calc_total(session["player"])),
         dealer_cards= session["dealer"],
         gameResult = gameOverMessage,
         hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
@@ -166,12 +183,29 @@ def render_a_gameOver_message(gameOverMessage):
         number_of_cards=len(session["deck"]),
     )
 
+def render_blackjack_gameover():
+    return render_template(
+        "start.html",
+        playerStands = True, 
+        player_cards=session["player"],
+        player_total="Player Total: " + str(calc_total(session["player"])),
+        dealer_cards= session["dealer"],
+        gameResult = "Black Jack, you win!",
+        hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
+        dealer_total= calc_total(session["dealer"]),
+        title="",
+        header="",
+        footer="",
+        number_of_cards=len(session["deck"]),
+    )
+
+
 def dealer_draw():
     while(calc_total(session["dealer"] )<= 17):
         session["dealer"].append(draw())
         session.modified = True
 
 
-   
+
 if __name__ == "__main__":
     app.run(debug=True)

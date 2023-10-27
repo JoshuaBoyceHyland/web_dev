@@ -99,7 +99,7 @@ def render_current_page():
         "start.html",
         playerStands = False,
         player_cards=session["player"],
-        player_total=calc_total(session["player"]),
+        player_total= "Player total:" + str(calc_total(session["player"])),
         dealer_cards =session["dealer"],
         dealer_total = session["dealer"][0][-1][0],
         hiddenCard = "static/cards/back.png",
@@ -155,7 +155,6 @@ def render_a_gameOver_message(gameOverMessage):
 
     return render_template(
         "start.html",
-        playerStands = True, 
         player_cards=session["player"],
         player_total=gameOverMessage,
         dealer_cards= session["dealer"],
@@ -170,11 +169,9 @@ def render_a_gameOver_message(gameOverMessage):
 def render_blackjack_gameover():
     return render_template(
         "start.html",
-        playerStands = True, 
         player_cards=session["player"],
-        player_total=calc_total(session["player"]),
+        player_total="Black Jack, you win!",
         dealer_cards= session["dealer"],
-        gameResult = "Black Jack, you win!",
         hiddenCard = "static/cards/" + session["dealer"][-1][-1][-1],
         dealer_total= calc_total(session["dealer"]),
         title="",

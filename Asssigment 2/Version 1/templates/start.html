@@ -14,6 +14,7 @@
     <p>
         {%if playerStands == True%} 
             {%for card in dealer_cards %}
+
                 <img src="static/cards/{{ card[-1][-1] }}"/>
             {% endfor %}
         {%else%}
@@ -32,7 +33,7 @@
         <img src="static/cards/{{ card[-1][-1] }}"/>
     {% endfor %}
     </p>
-    <h3>Total for the player is: {{ player_total }}</h3>
+    <h3>{{ player_total }}</h3>
 
     <form action="/stand" method="post">
         <input type="submit" value="Stand"/>
