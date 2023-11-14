@@ -40,6 +40,7 @@ def set_up_player_and_dealer():
 def display_opening_state():
     set_up_player_and_dealer()
     if(calc_total(session["player"]) == 21):
+        session["waiting_for_restart"] = True
         return render_blackjack_gameover()
     return render_current_page()
 
@@ -72,6 +73,7 @@ def select_another_card():
 def restart_game():
     set_up_player_and_dealer()
     if(calc_total(session["player"]) == 21):
+        session["waiting_for_restart"] = True
         return render_blackjack_gameover()
     return render_current_page()
 
