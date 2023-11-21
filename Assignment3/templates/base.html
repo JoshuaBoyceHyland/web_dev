@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <center>
+        <head>
+            
+
+            <script src="static/js/htmx.min.js"></script>
+            <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+        
+
+        </head>
+        <body>
+            <h1 id = title>Black Jack</h1>
+
+            {% block body %}
+            {% endblock %} 
+
+            <h2>{{ footer }}</h2>
+        </body>
+    </center>
+</html>
