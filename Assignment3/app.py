@@ -39,9 +39,7 @@ def display_opening_state():
 
     session["player"] = []
     session["dealer"] = []
-    session["can-hit"] = True
-    session["can-stand"] = True
-    session["player-blackjack"] = False
+
     session["game-over"] = False
 
     session["player"].append(draw())
@@ -92,8 +90,6 @@ def process_hit():
 
         if player_calc > 21:
             session["game-over"] = True
-            session["can-hit"] = False
-            session["can-stand"] = False
 
             # update the new card and total
             snippet = render_template(
@@ -104,14 +100,13 @@ def process_hit():
                 
             )
             # display the result box
-            snippet+= displayResultMessgage("Player went Bust, \n Dealer win!")
+            snippet+= displayResultMessgage("Player went Bust, Dealer win!")
             # reveal dealer card
-            snippet += revealDealersCards()
+            snippet += flip_dealers_cards_plus()
 
             return snippet
         
         elif player_calc == 21:
-            session["can-hit"] = False
             session["game-over"] = True
             snippet = render_template(
                 "hit.html",
@@ -122,7 +117,7 @@ def process_hit():
             )
             
             snippet+=displayResultMessgage("Player got 21, Player Wins!")
-            snippet+= revealDealersCards()
+            snippet+= flip_dealers_cards_plus()
 
             return snippet
         else:
@@ -142,7 +137,7 @@ def process_hit():
                 dealer_total=calc_total(session["dealer"]),
                 
             )
-        snippet+= displayResultMessgage("Press restart to player again!")
+        snippet+= displayResultMessgage("Press restart to play again!")
         return snippet
 
 
@@ -155,64 +150,71 @@ def process_stand():
     This gets a little complex due the number of "edge-case" possibilities.
     """
 
-    def generate_dealer_snippet(msg):
-        """This nested function returns the snippt of HTML to update the Dealer's cards."""
-        snippet = render_template(
-            "dealers.html ",
-            dealer_cards=session["dealer"],
-            dealer_message=msg,
-        )
+        
+    
+    if session["game-over"] == False:
 
-        return (
-            snippet + f"""<div id = "result"  hx-swap-oob="innerHTML"> {render_template("result.html")} </div>"""
-        )
-
-    if session["can-stand"]:
-        session["can-hit"] = False
-        session["can-stand"] = False
         session["game-over"] = True
         dealer_calc = calc_total(session["dealer"])
         player_calc = calc_total(session["player"])
-
         if dealer_calc == 21 and player_calc == 21:
             msg = "Both the Player and Dealer have 21. It's a draw."
-            return generate_dealer_snippet(msg)
+            snippet = flip_dealers_cards()
+            snippet+=displayResultMessgage(msg)
+            return snippet
 
         if dealer_calc == 21:
             msg = "The Dealer has 21. The Dealer wins!"
-            return generate_dealer_snippet(msg)
+            snippet = flip_dealers_cards()
+            snippet+= displayResultMessgage(msg)
+            return snippet
 
         if player_calc == 21:
             msg = f"The Player has 21. The Player Wins"
-            return generate_dealer_snippet(msg)
+            snippet = flip_dealers_cards()
+            snippet+= displayResultMessgage(msg)
+            return snippet
 
         while True:  # Gulp...
             if player_calc > 21:
-                return generate_dealer_snippet(
-                    f"The Player went bust! The Dealer wins..."
-                )
+                msg = "The Player went bust! The Dealer wins..."
+                snippet = flip_dealers_cards()
+                snippet+= displayResultMessgage("The Player went bust! The Dealer wins...")
+                return snippet
             if dealer_calc > 21:
-                return generate_dealer_snippet(
-                    f"The Dealer went bust ! The Player wins..."
-                )
+                snippet = flip_dealers_cards()
+                snippet+= displayResultMessgage("The Dealer went bust ! The Player wins...")
+                return snippet
+                
             if dealer_calc > player_calc:
-                return generate_dealer_snippet(
-                    f"The Dealer wins with a score of {dealer_calc}."
-                )
+                snippet = flip_dealers_cards()
+                snippet+= displayResultMessgage(f"The Dealer wins with a score of {dealer_calc}.")
+                return snippet
             if (dealer_calc == player_calc) and (dealer_calc > 16):
-                return generate_dealer_snippet("It's a draw (nobody wins).")
+                snippet = flip_dealers_cards()
+                snippet += displayResultMessgage("It's a draw (nobody wins).")
+                return snippet
             if dealer_calc < 17:
                 session["dealer"].append(draw())
                 dealer_calc = calc_total(session["dealer"])
             else:
-                return generate_dealer_snippet(
-                    f"The Player wins (against the Dealer's score of {dealer_calc})."
-                )
-    return generate_dealer_snippet("The game is over. Please start again...")
+                snippet = flip_dealers_cards()
+                snippet+=displayResultMessgage(f"The Player wins (against the Dealer's score of {dealer_calc}).")
+                return snippet
+    snippet = flip_dealers_cards()
+    snippet+=displayResultMessgage("Press restart to play again!")
+    return snippet
 
 
-"""reveals the dealers cards"""
-def revealDealersCards():
+def flip_dealers_cards():
+    return render_template(
+                "dealers.html ",
+                dealer_cards=session["dealer"],
+                dealer_total = calc_total(session["dealer"])
+            )
+
+"""reveals the dealers cards as an additional return """
+def flip_dealers_cards_plus():
     dealersCards = render_template(
             "dealers.html ",
             dealer_cards=session["dealer"],
@@ -221,7 +223,7 @@ def revealDealersCards():
     snippet = f"""<div id = "dealercards"  hx-swap-oob="innerHTML"> {dealersCards} </div> """
     return snippet 
 
-"""display the result box and a desired message"""
+"""display the result box and a desired message t"""
 def displayResultMessgage(result_message):
     res = render_template(
                 "result.html",
