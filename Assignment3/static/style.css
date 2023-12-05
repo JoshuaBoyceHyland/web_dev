@@ -9,7 +9,8 @@ html{
 }
 body{
     background-color: green;
-    height: 100%;
+    height: 89.6vh;
+    width: 94.6vw;
     border: 50px solid #880808;
     border-style: ridge;
     margin: 0;
