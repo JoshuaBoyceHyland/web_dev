@@ -21,6 +21,17 @@ body{
     text-decoration: underline;
     
 }
+#user
+{
+    float: left;
+    position: absolute;
+    left: 20%;
+    top: 50%;
+    background-color: black;
+    border: 2px solid white;
+    
+    
+}
 #title{
     color:white;
     position: absolute;

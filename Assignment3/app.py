@@ -1,7 +1,7 @@
 import random
 
 from flask import Flask, render_template, session
-
+import DBcm
 from model.data import make_deck, init_deck_values
 from calcs import calc_total
 
@@ -12,7 +12,12 @@ app = Flask(__name__)
 app.secret_key = (
     "kfke hrt'oerj erterutv'rtjv 'oieqrut0345uv 0'34qutv0rutv 'eqrutv equeqtr' u"
 )
-
+creds = {
+    'host': 'localhost',
+    'database': 'BlackJackDB',
+    'user': 'josh',
+    'password': 'password'
+}
 
 deck_values = init_deck_values()  # Global data (which is OK, as this never changes).
 
@@ -28,6 +33,133 @@ def draw():
     return selection, deck_values[selection]
 
 
+def random_gamer():    
+    with DBcm.UseDatabase(creds) as db:
+        SQL = """
+        select gamertag from players
+        """
+        db.execute(SQL)
+        tags = db.fetchall()
+        tags = [row[0] for row in tags] 
+        who = random.choice(tags)
+    return who
+
+def update_games_database(gamertag, outcome, isTwentyOne):
+    """ updates the game data of specified user"""
+    SQL = """
+        insert into games
+        (gamertag, outcome,21s)
+        values
+        (%s,%s,%s)      
+        """
+
+    with DBcm.UseDatabase(creds) as db:
+        db.execute(SQL, (gamertag, outcome, isTwentyOne))
+
+        SQL = """select * from games"""
+        db.execute(SQL)
+        results = db.fetchall()
+
+
+
+def get_winrate(player):
+    "gets a players win rate"
+    with DBcm.UseDatabase(creds) as db: 
+        SQL = """
+        select count(*) from games 
+        where gamertag = %s and outcome = "Win"
+        """
+        db.execute(SQL,(player,))
+        results = db.fetchone()
+        wins = results[0]
+
+        SQL = """
+        select count(*) from games 
+        where gamertag = %s and outcome = "Loss"
+        """
+        db.execute(SQL,(player,))
+        results = db.fetchone()
+        losses = results[0]
+
+        winRate = (wins/(wins + losses)) * 100
+
+        return winRate
+
+def get_highest_win_streak(player):
+    """gets a players highest win streak"""
+    with DBcm.UseDatabase(creds) as db: 
+
+        SQL = """select outcome from games where gamertag = %s """
+        db.execute(SQL,(player,))
+        results = db.fetchall()
+        
+        highestWinStreak = 0; 
+        winStreak =0; 
+        
+        for result in results:
+            if "Loss" in result:
+                if(highestWinStreak < winStreak):
+                     highestWinStreak = winStreak
+                winStreak = 0
+            else:
+                winStreak +=1
+            
+        if( winStreak != 0):
+            if( winStreak > highestWinStreak):
+                highestWinStreak = winStreak
+
+
+    return highestWinStreak
+
+def get_21s(player):
+    """gets a player number of 21s from table"""
+    with DBcm.UseDatabase(creds) as db: 
+        SQL = """select 21s from games where gamertag = %s """
+        db.execute(SQL,(player,))
+        results = db.fetchall()
+        twentyOnesResults = 0
+        for result in results:
+            if "yes" in result:
+                twentyOnesResults+=1
+    return twentyOnesResults
+
+
+def update_gameStats(winrate, high_streak, twenty_ones, gamertag):
+    """updates the stats table if there is a gamer tag exist and inserts if none """
+    with DBcm.UseDatabase(creds) as db: 
+        ## check if user exist first 
+        SQL = """select gamertag from gamestats where gamertag = %s """
+        db.execute(SQL,(gamertag,))
+        result = db.fetchone()
+        print(result)
+        if result is None:
+            SQL = """ 
+                insert into gamestats
+                (gamertag, winrate, HighestWinStreak, 21s)
+                values
+                (%s,%s, %s, %s)        
+                """
+            db.execute(SQL,(gamertag,winrate,high_streak,twenty_ones))
+        else:
+            SQL = """
+            update gamestats 
+            set winrate = %s, HighestWinStreak = %s, 21s =%s 
+            where gamertag =%s
+            """
+            db.execute(SQL,(winrate,high_streak,twenty_ones, gamertag))
+
+def get_player_names():
+    """gets a list of players names"""
+    with DBcm.UseDatabase(creds) as db:
+        SQL = """
+        select gamertag from players
+        """
+        db.execute(SQL)
+        tags = db.fetchall()
+        tags = [row[0] for row in tags] 
+    return tags
+
+
 @app.get("/")
 @app.get("/start")
 def display_opening_state():
@@ -35,8 +167,12 @@ def display_opening_state():
 
     Reset everything, dealing 2 cards each the Dealer and Player.
     """
-    session["deck"] = make_deck()
+    session["gamertag"] = "JDawg"
+    
+    update_gameStats(get_winrate( session["gamertag"]), get_highest_win_streak( session["gamertag"]), get_21s( session["gamertag"]),  session["gamertag"])
 
+    
+    session["deck"] = make_deck()
     session["player"] = []
     session["dealer"] = []
 
@@ -72,6 +208,7 @@ def display_opening_state():
         session["game-over"] = True
     
         snippet+=displayResultMessgage("BlackJack, Player Wins")
+        update_games_database(session["gamertag"], "Win","yes" )
         return snippet
         
     return snippet
@@ -103,11 +240,12 @@ def process_hit():
             snippet+= displayResultMessgage("Player went Bust, Dealer win!")
             # reveal dealer card
             snippet += flip_dealers_cards_plus()
-
+            update_games_database(session["gamertag"], "Loss","no" )
             return snippet
         
         elif player_calc == 21:
             session["game-over"] = True
+            
             snippet = render_template(
                 "hit.html",
                 player_cards=session["player"],
@@ -118,7 +256,7 @@ def process_hit():
             
             snippet+=displayResultMessgage("Player got 21, Player Wins!")
             snippet+= flip_dealers_cards_plus()
-
+            update_games_database(session["gamertag"], "Win","yes" )
             return snippet
         else:
             return render_template(
@@ -161,18 +299,21 @@ def process_stand():
             msg = "Both the Player and Dealer have 21. It's a draw."
             snippet = flip_dealers_cards()
             snippet+=displayResultMessgage(msg)
+            update_games_database(session["gamertag"], "Win","yes" ) ## counts as win
             return snippet
 
         if dealer_calc == 21:
             msg = "The Dealer has 21. The Dealer wins!"
             snippet = flip_dealers_cards()
             snippet+= displayResultMessgage(msg)
+            update_games_database(session["gamertag"], "Loss","no" )
             return snippet
 
         if player_calc == 21:
             msg = f"The Player has 21. The Player Wins"
             snippet = flip_dealers_cards()
             snippet+= displayResultMessgage(msg)
+            update_games_database(session["gamertag"], "Win","yes" )
             return snippet
 
         while True:  # Gulp...
@@ -180,19 +321,23 @@ def process_stand():
                 msg = "The Player went bust! The Dealer wins..."
                 snippet = flip_dealers_cards()
                 snippet+= displayResultMessgage("The Player went bust! The Dealer wins...")
+                update_games_database(session["gamertag"], "Loss","no" )
                 return snippet
             if dealer_calc > 21:
                 snippet = flip_dealers_cards()
                 snippet+= displayResultMessgage("The Dealer went bust ! The Player wins...")
+                update_games_database(session["gamertag"], "Win","no" )
                 return snippet
                 
             if dealer_calc > player_calc:
                 snippet = flip_dealers_cards()
                 snippet+= displayResultMessgage(f"The Dealer wins with a score of {dealer_calc}.")
+                update_games_database(session["gamertag"], "Loss","no" )
                 return snippet
             if (dealer_calc == player_calc) and (dealer_calc > 16):
                 snippet = flip_dealers_cards()
                 snippet += displayResultMessgage("It's a draw (nobody wins).")
+                update_games_database(session["gamertag"], "Win","no" ) ## counts as win
                 return snippet
             if dealer_calc < 17:
                 session["dealer"].append(draw())
